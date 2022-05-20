@@ -23,14 +23,18 @@ import capstoneproject.mediscan.data.ViewModelFactory
 import capstoneproject.mediscan.data.local.UserPreferences
 import capstoneproject.mediscan.databinding.ActivityMainBinding
 import capstoneproject.mediscan.helper.rotateBitmap
+import capstoneproject.mediscan.helper.uriToFile
 import capstoneproject.mediscan.ml.AnimalModel
 import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "session")
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var image: Bitmap
 
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -44,6 +48,8 @@ class MainActivity : AppCompatActivity() {
                 isBackCamera
             )
 
+            image = result
+
             binding.imgviewCaptured.setImageBitmap(result)
         }
     }
@@ -52,6 +58,9 @@ class MainActivity : AppCompatActivity() {
     ) {
         if (it.resultCode == RESULT_OK) {
             val selectedImg: Uri = it.data?.data as Uri
+            val myFile = uriToFile(selectedImg, this)
+
+            image = BitmapFactory.decodeFile(myFile.path)
 
             binding.imgviewCaptured.setImageURI(selectedImg)
         }
@@ -92,6 +101,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, WelcomeActivity::class.java))
             finish()
         }
+        binding.buttonAnalyze.setOnClickListener {analyzeImage(image) }
     }
 
     private fun startCameraX() {
@@ -131,7 +141,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun analyzeImage(bitmap: Bitmap) {
+        var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
         val model = AnimalModel.newInstance(this)
+        var labelList = application.assets.open("AnimalLabel.txt").bufferedReader().use { it.readText() }.split("\n")
+
+// Creates inputs for reference.
+        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.UINT8)
+        inputFeature0.loadBuffer(TensorImage.fromBitmap(resized).buffer)
+
+// Runs model inference and gets result.
+        val outputs = model.process(inputFeature0)
+        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+
+        var max = getMax(outputFeature0.floatArray)
+
+        binding.outputResult.text = labelList[max]
+
+// Releases model resources if no longer used.
+        model.close()
+    }
+
+    private fun getMax(arr: FloatArray): Int{
+        var index = 0
+        var min = 0.0f
+
+        for (i in 0..1000){
+            if(arr[i]>min){
+                index = i
+                min = arr[i]
+            }
+        }
+
+        return index
     }
 
     companion object {

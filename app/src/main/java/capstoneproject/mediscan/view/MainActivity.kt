@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,8 @@ import capstoneproject.mediscan.data.ViewModelFactory
 import capstoneproject.mediscan.data.local.UserPreferences
 import capstoneproject.mediscan.databinding.ActivityMainBinding
 import capstoneproject.mediscan.helper.rotateBitmap
+import capstoneproject.mediscan.ml.AnimalModel
+import org.tensorflow.lite.DataType
 import java.io.File
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "session")
@@ -63,9 +66,9 @@ class MainActivity : AppCompatActivity() {
             ViewModelFactory(UserPreferences.getInstance(dataStore)))[MainViewModel::class.java]
         val isJustLogin = intent.getBooleanExtra(LOGIN_FLAG, false)
 
-        if(!isJustLogin){
-            viewModel.getToken().observe(this){
-                if(it.isEmpty()){
+        if (!isJustLogin) {
+            viewModel.getToken().observe(this) {
+                if (it.isEmpty()) {
                     startActivity(Intent(this, WelcomeActivity::class.java))
                     finish()
                 }
@@ -125,6 +128,10 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+    private fun analyzeImage(bitmap: Bitmap) {
+        val model = AnimalModel.newInstance(this)
     }
 
     companion object {

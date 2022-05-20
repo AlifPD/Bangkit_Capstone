@@ -100,4 +100,14 @@
             app:layout_constraintGuide_begin="634dp"
             android:orientation="horizontal" />
 
+    <Button
+            android:text="Analyze"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_analyze"
+            app:layout_constraintTop_toTopOf="@+id/guideline3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:cornerRadius="10dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

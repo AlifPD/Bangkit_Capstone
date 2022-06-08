@@ -25,6 +25,7 @@ import capstoneproject.mediscan.databinding.ActivityMainBinding
 import capstoneproject.mediscan.helper.rotateBitmap
 import capstoneproject.mediscan.helper.uriToFile
 import capstoneproject.mediscan.ml.AnimalModel
+import capstoneproject.mediscan.ml.ConvertedModel
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
@@ -141,21 +142,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun analyzeImage(bitmap: Bitmap) {
-        var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
-        val model = AnimalModel.newInstance(this)
-        var labelList = application.assets.open("AnimalLabel.txt").bufferedReader().use { it.readText() }.split("\n")
+        val model = ConvertedModel.newInstance(this)
 
 // Creates inputs for reference.
-        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.UINT8)
-        inputFeature0.loadBuffer(TensorImage.fromBitmap(resized).buffer)
+        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 200, 150, 3), DataType.FLOAT32)
+        image = Bitmap.createScaledBitmap(bitmap, 400, 300, true)
+        inputFeature0.loadBuffer(TensorImage.fromBitmap(image).buffer)
 
 // Runs model inference and gets result.
         val outputs = model.process(inputFeature0)
         val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
-        var max = getMax(outputFeature0.floatArray)
-
-        binding.outputResult.text = labelList[max]
+        binding.outputResult.text = getMax(outputFeature0.floatArray).toString()
 
 // Releases model resources if no longer used.
         model.close()
@@ -165,7 +163,7 @@ class MainActivity : AppCompatActivity() {
         var index = 0
         var min = 0.0f
 
-        for (i in 0..1000){
+        for (i in 0..2){
             if(arr[i]>min){
                 index = i
                 min = arr[i]

@@ -60,7 +60,6 @@ class HomeActivity : AppCompatActivity() {
             val intent = Intent(this@HomeActivity, DetailActivity::class.java)
             startActivity(intent)
         }
-
     }
 
     private fun setSearchResult(listHistory: List<GetHistoryResponseItem?>?) {

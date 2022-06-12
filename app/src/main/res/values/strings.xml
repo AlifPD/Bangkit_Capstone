@@ -54,4 +54,5 @@
     <string name="delete_history">Delete History</string>
     <string name="result_image">Result Image</string>
     <string name="button_to_hospital">Button to Hospital</string>
+    <string name="heathy_desc">From the scanning results of our application, your skin is not found any indication of skin diseases. To keep your skin healthy, there are several things that you need to pay attention to maintain the health of your skin, including maintaining skin from sun exposure, eating healthy food, getting enough rest and using health products such as body lotion and sunscreen.</string>
 </resources>
